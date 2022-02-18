@@ -17,6 +17,10 @@ class GameState():
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
+
+        self.moveFunctions = {'P' : self.getPawnMoves, 'R' : self.getRookMoves, 'N' : self.getKnightMoves, 
+                                'B' : self.getBishopMoves, 'Q' : self.getQueenMoves, 'K' : self.getKingMoves}
+
         self.whiteToMove = True
         self.moveLog = []
 
@@ -36,6 +40,50 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved # moved piece from the last move back to its starting square
             self.board[move.endRow][move.endCol] = move.pieceCaptured # the same goes for the captured piece
             self.whiteToMove = not self.whiteToMove #turns back
+
+    #Conditions for all moves when a check happens
+    def getValidMoves(self):
+        return self.getAllPossibleMoves() #for now, just return all possible moves
+    
+    #Conditions for all moves without a check happening
+    def getAllPossibleMoves(self):
+        moves = [] #list of moves
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                turn = self.board[row][col][0] #determines by the first character whose turn it is -> "wP" [w], "bP" [b], "--" [-] -> empty square
+                if(turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove):
+                    piece = self.board[row][col][1]
+                    self.moveFunctions[piece](row, col, moves) #Calls the appropriate move function
+        return moves
+
+    #Get all possible moves for each individual piece                  
+    def getPawnMoves(self, row, col, moves):
+        if self.whiteToMove: #white turn to move
+            if self.board[row-1][col] == "--": #One square pawn move validation
+                moves.append(Move((row, col), (row-1, col), self.board)) #Appends all possible one square pawn moves to possible move list
+                if row == 6 and self.board[row - 2][col] == "--":
+                    moves.append(Move((row, col), (row-2, col), self.board)) #Appends all possible 2 square starting moves to a move list
+            if col - 1 >= 0: #Constraint that prevents a pawn from capturing outside of the board
+                if self.board[row-1][col-1][0] == 'b': #Searches for a black piece to capture to the left diagonal
+                    moves.append(Move((row, col), (row-1, col-1), self.board)) #Appends all currently possible left-diagonal captures for white to the move list for the current position
+            if col+1 <= 7: #Prevents from capturing a piece outside of the board
+                if self.board[row-1][col+1][0] == 'b': #Black piece to capture to the right diagonal 
+                    moves.append(Move((row, col), (row-1, col+1), self.board)) #Appends all possible right-diagonal captures to the move list for the current position
+    def getRookMoves(self, r, c, moves):
+        pass
+    
+    def getKnightMoves(self, r, c, moves):
+        pass
+
+    def getBishopMoves(self, r, c, moves):
+        pass
+
+    def getQueenMoves(self, r, c, moves):
+        pass
+
+    def getKingMoves(self, r, c, moves):
+        pass
+
 class Move():
     ranksToRows = {"1" : 7, "2" : 6, "3" : 5, "4" : 4, "5" : 3, "6" : 2, "7" : 1, "8" : 0} #translates ranks to rows
     rowsToRanks = {v: k for k, v in ranksToRows.items()} #reverse translation of rows to ranks (reverse dictionary)
@@ -50,6 +98,13 @@ class Move():
         self.endCol = endSquare[1] #ending position of a move -> (6,2)
         self.pieceMoved = board[self.startRow][self.startCol] #finds a piece on a board associated with the coordinates
         self.pieceCaptured = board[self.endRow][self.endCol] #finds either a piece or an empty square associated with the coordinates
+        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.startCol #generating a unique move id between 0 and 7777
+
+    #Overriding the equal method
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return self.moveID == other.moveID
+        return False
 
     #TODO: real chess notation!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def getChessNotation(self):
