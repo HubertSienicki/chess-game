@@ -22,11 +22,31 @@ def main():
     gs = ChessEngine.GameState()
     LoadImages()
     running = True
+    sqSelected = ()
+    playerClicks = [] #keep track of player clicks -> [(2,3), (5,7)]
 
     while running:
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
+            elif e.type == py.MOUSEBUTTONDOWN:
+                mouse_position = py.mouse.get_pos()
+                col = mouse_position[0] // SQUARESIZE
+                row = mouse_position[1] // SQUARESIZE
+                print(mouse_position)
+                if sqSelected == (row, col):
+                    sqSelected = () #deselection
+                    playerClicks = [] #clear clicks    
+                else:
+                    sqSelected = (row, col)
+                    playerClicks.append(sqSelected)
+                if len(playerClicks) == 2:
+                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+
+                    gs.makeMove(move)
+                    sqSelected = () #reset user clicks
+                    playerClicks = [] 
+
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         py.display.flip()
