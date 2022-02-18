@@ -20,6 +20,8 @@ class GameState():
         self.whiteToMove = True
         self.moveLog = []
 
+
+    #Executes a move object
     def makeMove(self, move):
         if self.board[move.startRow][move.startCol] != "--":
             self.board[move.startRow][move.startCol] = "--"
@@ -27,6 +29,13 @@ class GameState():
             self.moveLog.append(move) #log the move to display the history
             self.whiteToMove = not self.whiteToMove #swap players
 
+    #undoes the last made move
+    def undoMove(self):
+        if len(self.moveLog) != 0:
+            move = self.moveLog.pop()       #pops the move from the list
+            self.board[move.startRow][move.startCol] = move.pieceMoved # moved piece from the last move back to its starting square
+            self.board[move.endRow][move.endCol] = move.pieceCaptured # the same goes for the captured piece
+            self.whiteToMove = not self.whiteToMove #turns back
 class Move():
     ranksToRows = {"1" : 7, "2" : 6, "3" : 5, "4" : 4, "5" : 3, "6" : 2, "7" : 1, "8" : 0} #translates ranks to rows
     rowsToRanks = {v: k for k, v in ranksToRows.items()} #reverse translation of rows to ranks (reverse dictionary)
@@ -44,7 +53,7 @@ class Move():
 
     #TODO: real chess notation!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+        return self.getRankFile(self.startRow, self.startCol) + "->" + self.getRankFile(self.endRow, self.endCol)
 
     #Helper method to return the translated row and column
     def getRankFile(self, row, col):

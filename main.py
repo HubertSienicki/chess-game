@@ -21,7 +21,7 @@ def main():
     screen.fill(py.Color("white"))
     gs = ChessEngine.GameState()
     LoadImages()
-    running = True
+    running = True # defines if the game is running
     sqSelected = ()
     playerClicks = [] #keep track of player clicks -> [(2,3), (5,7)]
 
@@ -29,6 +29,7 @@ def main():
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
+            #mouse presses
             elif e.type == py.MOUSEBUTTONDOWN:
                 mouse_position = py.mouse.get_pos()
                 col = mouse_position[0] // SQUARESIZE
@@ -42,11 +43,14 @@ def main():
                     playerClicks.append(sqSelected)
                 if len(playerClicks) == 2:
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-
+                    print(move.getChessNotation())
                     gs.makeMove(move)
                     sqSelected = () #reset user clicks
                     playerClicks = [] 
-
+            #key handling
+            elif e.type == py.KEYDOWN:
+                if e.key == py.K_LEFT: #undo when left arrow is pressed
+                    gs.undoMove()
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         py.display.flip()
