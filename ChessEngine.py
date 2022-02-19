@@ -56,7 +56,8 @@ class GameState():
                     self.moveFunctions[piece](row, col, moves) #Calls the appropriate move function
         return moves
 
-    #Get all possible moves for each individual piece                  
+    #Get all possible moves for each individual piece 
+    # TODO: Repair pawns being able to move diagonally without captures              
     def getPawnMoves(self, row, col, moves):
         if self.whiteToMove: #white turn to move
             if self.board[row-1][col] == "--": #One square pawn move validation
@@ -69,6 +70,18 @@ class GameState():
             if col+1 <= 7: #Prevents from capturing a piece outside of the board
                 if self.board[row-1][col+1][0] == 'b': #Black piece to capture to the right diagonal 
                     moves.append(Move((row, col), (row-1, col+1), self.board)) #Appends all possible right-diagonal captures to the move list for the current position
+        else:
+            if self.board[row+1][col] == "--": #One square moves
+                moves.append(Move((row, col), (row+1, col), self.board))
+                if row == 1 and self.board[row + 1][col] == "--": #One square
+                    moves.append(Move((row, col), (row+2, col), self.board))
+                if col - 1 >= 0: #left capture
+                    if self.board[row+1][col-1] == 'w':
+                        moves.append(Move((row, col), (row+1, col-1), self.board))
+                if col + 1 <= 7: #capture to the right
+                    if self.board[row+1][col+1] == "w":
+                        moves.append(Move((row, col), (row+1, col+1), self.board))
+    
     def getRookMoves(self, r, c, moves):
         pass
     
