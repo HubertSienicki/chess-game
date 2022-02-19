@@ -58,7 +58,8 @@ class GameState():
 
     #Get all possible moves for each individual piece 
     # TODO: Repair pawns being able to move diagonally without captures
-    # TODO: Fix a weird bug that dissalows black to capture in the start of the game             
+    # TODO: Fix a weird bug that dissalows black to capture in the start of the game
+    # TODO: Pawn moves            
     def getPawnMoves(self, row, col, moves):
         if self.whiteToMove: #white turn to move
             if self.board[row-1][col] == "--": #One square pawn move validation
@@ -71,21 +72,36 @@ class GameState():
             if col+1 <= 7: #Prevents from capturing a piece outside of the board
                 if self.board[row-1][col+1][0] == 'b': #Black piece to capture to the right diagonal 
                     moves.append(Move((row, col), (row-1, col+1), self.board)) #Appends all possible right-diagonal captures to the move list for the current position
-        else:
+        else: #black pawn moves
             if self.board[row+1][col] == "--": #One square moves
                 moves.append(Move((row, col), (row+1, col), self.board))
-                if row == 1 and self.board[row + 1][col] == "--": #One square
+                if row == 1 and self.board[row + 2][col] == "--": #One square
                     moves.append(Move((row, col), (row+2, col), self.board))
                 if col - 1 >= 0: #left capture
-                    if self.board[row+1][col-1] == 'w':
+                    if self.board[row+1][col-1][0] == 'w':
                         moves.append(Move((row, col), (row+1, col-1), self.board))
                 if col + 1 <= 7: #capture to the right
-                    if self.board[row+1][col+1] == "w":
+                    if self.board[row+1][col+1][0] == "w":
                         moves.append(Move((row, col), (row+1, col+1), self.board))
     
-    def getRookMoves(self, r, c, moves):
-        pass
-    
+    def getRookMoves(self, row, col, moves):
+        directions = ((-1,0), (0,-1), (1,0), (0,1)) #directions of movement for a rook
+        color = "b" if self.whiteToMove else "w" #color change dependent on turn
+        for d in directions:
+            for i in range(1,8):
+                endRow = row + d[0] * i
+                endCol = col + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == "--": #empty square validation
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                    elif endPiece[0] == color: # enemy piece validation
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                        break
+                    else:
+                        break
+                else:
+                    break
     def getKnightMoves(self, r, c, moves):
         pass
 
@@ -113,7 +129,8 @@ class Move():
         self.pieceMoved = board[self.startRow][self.startCol] #finds a piece on a board associated with the coordinates
         self.pieceCaptured = board[self.endRow][self.endCol] #finds either a piece or an empty square associated with the coordinates
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.startCol #generating a unique move id between 0 and 7777
-
+        print(self.getChessNotation(), self.moveID)
+        print("----------------------------------------------------------------")
     #Overriding the equal method
     def __eq__(self, other):
         if isinstance(other, Move):
