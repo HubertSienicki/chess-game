@@ -57,7 +57,8 @@ class GameState():
         return moves
 
     #Get all possible moves for each individual piece 
-    # TODO: Repair pawns being able to move diagonally without captures              
+    # TODO: Repair pawns being able to move diagonally without captures
+    # TODO: Fix a weird bug that dissalows black to capture in the start of the game             
     def getPawnMoves(self, row, col, moves):
         if self.whiteToMove: #white turn to move
             if self.board[row-1][col] == "--": #One square pawn move validation
