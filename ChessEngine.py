@@ -19,10 +19,10 @@ class GameState():
         ]
 
         self.moveFunctions = {'P' : self.getPawnMoves, 'R' : self.getRookMoves, 'N' : self.getKnightMoves, 
-                                'B' : self.getBishopMoves, 'Q' : self.getQueenMoves, 'K' : self.getKingMoves}
+                                'B' : self.getBishopMoves, 'Q' : self.getQueenMoves, 'K' : self.getKingMoves} #A list of functions used as a switch statement
 
-        self.whiteToMove = True
-        self.moveLog = []
+        self.whiteToMove = True #Who to move
+        self.moveLog = [] #To later display / undo moves
 
 
     #Executes a move object
@@ -33,7 +33,7 @@ class GameState():
             self.moveLog.append(move) #log the move to display the history
             self.whiteToMove = not self.whiteToMove #swap players
 
-    #undoes the last made move
+    #Undoes the last made move from the move log
     def undoMove(self):
         if len(self.moveLog) != 0:
             move = self.moveLog.pop()       #pops the move from the list
@@ -41,7 +41,7 @@ class GameState():
             self.board[move.endRow][move.endCol] = move.pieceCaptured # the same goes for the captured piece
             self.whiteToMove = not self.whiteToMove #turns back
 
-    #Conditions for all moves when a check happens
+    #TODO: "Check" conditions
     def getValidMoves(self):
         return self.getAllPossibleMoves() #for now, just return all possible moves
     
@@ -52,7 +52,7 @@ class GameState():
             for col in range(len(self.board[row])):
                 turn = self.board[row][col][0] #determines by the first character whose turn it is -> "wP" [w], "bP" [b], "--" [-] -> empty square
                 if(turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove):
-                    piece = self.board[row][col][1]
+                    piece = self.board[row][col][1] #determines by the first character which piece it is -> "wP" [P], "bQ" [Q], "--" [-] -> empty square
                     self.moveFunctions[piece](row, col, moves) #Calls the appropriate move function
         return moves
 
@@ -85,12 +85,12 @@ class GameState():
                         moves.append(Move((row, col), (row+1, col+1), self.board))
     
     def getRookMoves(self, row, col, moves):
-        directions = ((-1,0), (0,-1), (1,0), (0,1)) #directions of movement for a rook
+        offsets = ((-1,0), (0,-1), (1,0), (0,1)) #movement offsets for a rook
         color = "b" if self.whiteToMove else "w" #color change dependent on turn
-        for d in directions:
+        for o in offsets:
             for i in range(1,8):
-                endRow = row + d[0] * i
-                endCol = col + d[1] * i
+                endRow = row + o[0] * i
+                endCol = col + o[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
                     endPiece = self.board[endRow][endCol]
                     if endPiece == "--": #empty square validation
@@ -98,16 +98,31 @@ class GameState():
                     elif endPiece[0] == color: # enemy piece validation
                         moves.append(Move((row, col), (endRow, endCol), self.board))
                         break
-                    else:
+                    else: #friendly piece detection, therefore move is invalid
                         break
-                else:
+                else: #outside of the board validation
                     break
     def getKnightMoves(self, r, c, moves):
         pass
 
-    def getBishopMoves(self, r, c, moves):
-        pass
-
+    def getBishopMoves(self, row, col, moves):
+        offsets = ((-1,-1), (-1,1), (1,-1), (1,1))
+        color = "b" if self.whiteToMove else "w"
+        for o in offsets:
+            for i in range(1,8):
+                endRow = row + o[0] * i
+                endCol = col + o[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == "--":
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                    elif endPiece[0] == color:
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                        break
+                    else: 
+                        break
+                else:
+                    break
     def getQueenMoves(self, r, c, moves):
         pass
 
@@ -119,7 +134,7 @@ class Move():
     rowsToRanks = {v: k for k, v in ranksToRows.items()} #reverse translation of rows to ranks (reverse dictionary)
 
     filesToCols = {"a" : 0, "b" : 1, "c" : 2, "d" : 3, "e" : 4, "f" : 5, "g" : 6, "h" : 7 }
-    colsToFiles = {v: k for k,v in filesToCols.items()}
+    colsToFiles = {v: k for k, v in filesToCols.items()}
 
     def __init__(self, startSquare, endSquare, board):
         self.startRow = startSquare[0]
