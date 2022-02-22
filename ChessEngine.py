@@ -59,7 +59,11 @@ class GameState():
     #Get all possible moves for each individual piece 
     # TODO: Repair pawns being able to move diagonally without captures
     # TODO: Fix a weird bug that dissalows black to capture in the start of the game
-    # TODO: Pawn moves            
+    # TODO: Pawn moves
+    # TODO: I dont know why the fuck does the pieces can move weirdly, i give up 
+    # TODO: The logic seems ok, but regardless the king can move like a fucking knight 
+    ############################################################################################################################################          
+    
     def getPawnMoves(self, row, col, moves):
         if self.whiteToMove: #white turn to move
             if self.board[row-1][col] == "--": #One square pawn move validation
@@ -102,8 +106,17 @@ class GameState():
                         break
                 else: #outside of the board validation
                     break
-    def getKnightMoves(self, r, c, moves):
-        pass
+                
+    def getKnightMoves(self, row, col, moves):
+        offsets = ((-2,-1), (-2,1), (-1,-2), (-1,2), (1,-2), (1,2), (2,-1), (2,1))
+        color = "w" if self.whiteToMove else "b"
+        for o in offsets:
+            endRow = row + o[0]
+            endCol = col + o[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != color: #Not an ally piece, therfore its either an empty square or enemy piece
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
 
     def getBishopMoves(self, row, col, moves):
         offsets = ((-1,-1), (-1,1), (1,-1), (1,1))
@@ -123,11 +136,20 @@ class GameState():
                         break
                 else:
                     break
-    def getQueenMoves(self, r, c, moves):
-        pass
+    def getQueenMoves(self, row, col, moves): #queen is just a rook and a bishop connected together.
+        self.getBishopMoves(row, col, moves)
+        self.getRookMoves(row, col, moves)
 
-    def getKingMoves(self, r, c, moves):
-        pass
+    def getKingMoves(self, row, col, moves):
+        offsets = ((-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1))
+        color = "w" if self.whiteToMove else "b"
+        for i in range(8):
+            endRow = row + offsets[i][0]
+            endCol = col + offsets[i][1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != color:
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
 
 class Move():
     ranksToRows = {"1" : 7, "2" : 6, "3" : 5, "4" : 4, "5" : 3, "6" : 2, "7" : 1, "8" : 0} #translates ranks to rows
