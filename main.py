@@ -46,12 +46,15 @@ def main():
                     playerClicks.append(sqSelected)
                 if len(playerClicks) == 2:
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    print(move.getChessNotation())
                     #If a move that is made is in valid moves, proceed 
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade = True
-                    sqSelected = () #reset user clicks
-                    playerClicks = [] 
+                        sqSelected = () #reset user clicks
+                        playerClicks = [] 
+                    else:
+                        playerClicks = [sqSelected]
             #key handling
             elif e.type == py.KEYDOWN:
                 if e.key == py.K_LEFT: #undo when left arrow is pressed

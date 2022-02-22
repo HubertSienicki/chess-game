@@ -166,8 +166,6 @@ class Move():
         self.pieceMoved = board[self.startRow][self.startCol] #finds a piece on a board associated with the coordinates
         self.pieceCaptured = board[self.endRow][self.endCol] #finds either a piece or an empty square associated with the coordinates
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.startCol #generating a unique move id between 0 and 7777
-        print(self.getChessNotation(), self.moveID)
-        print("----------------------------------------------------------------")
     #Overriding the equal method
     def __eq__(self, other):
         if isinstance(other, Move):
