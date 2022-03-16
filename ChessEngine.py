@@ -156,25 +156,29 @@ class GameState():
                         moves.append(Move((row, col), (row-2, col), self.board))
         #captures
             if col - 1 >= 0: #capture to the left
-                if self.board[row-1][col-1] == 'b':
+                if self.board[row-1][col-1][0] == 'b':
                     if not piecePinned or pinOffset == (-1, -1):
                         moves.append(Move((row, col), (row-1, col-1), self.board))
             if col + 1 <= 7: #capture to the right
-                if self.board[row-1][col+1] == 'b':
+                if self.board[row-1][col+1][0] == 'b':
                     if not piecePinned or pinOffset == (-1, 1):
                         moves.append(Move((row, col), (row - 1, col + 1), self.board)) 
 
         else: #black pawn moves
-            if self.board[row+1][col] == "--": #One square moves
-                moves.append(Move((row, col), (row+1, col), self.board))
-                if row == 1 and self.board[row + 2][col] == "--": #One square
-                    moves.append(Move((row, col), (row+2, col), self.board))
-                if col - 1 >= 0: #left capture
-                    if self.board[row+1][col-1][0] == 'w':
+            if self.board[row+1][col] == "--": #One square pawn move validation
+                if not piecePinned or pinOffset == (1, 0):
+                    moves.append(Move((row, col), (row + 1, col), self.board))
+                    if row == 1 and self.board[row + 2][col] == "--": #2 square moves
+                        moves.append(Move((row, col), (row+2, col), self.board))
+        #captures
+            if col - 1 >= 0: #capture to the left
+                if self.board[row+1][col-1][0] == 'w':
+                    if not piecePinned or pinOffset == (1, -1):
                         moves.append(Move((row, col), (row+1, col-1), self.board))
-                if col + 1 <= 7: #capture to the right
-                    if self.board[row+1][col+1][0] == "w":
-                        moves.append(Move((row, col), (row+1, col+1), self.board))
+            if col + 1 <= 7: #capture to the right
+                if self.board[row+1][col+1][0] == 'w':
+                    if not piecePinned or pinOffset == (1, 1):
+                        moves.append(Move((row, col), (row + 1, col + 1), self.board)) 
     
     def getRookMoves(self, row, col, moves):
         piecePinned = False
@@ -194,14 +198,15 @@ class GameState():
                 endRow = row + o[0] * i
                 endCol = col + o[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece = self.board[endRow][endCol]
-                    if endPiece == "--": #empty square validation
-                        moves.append(Move((row, col), (endRow, endCol), self.board))
-                    elif endPiece[0] == color: # enemy piece validation
-                        moves.append(Move((row, col), (endRow, endCol), self.board))
-                        break
-                    else: #friendly piece detection, therefore move is invalid
-                        break
+                    if not piecePinned and pinOffset == o or pinOffset == (-o[0], -o[1]):
+                        endPiece = self.board[endRow][endCol]
+                        if endPiece == "--": #empty square validation
+                            moves.append(Move((row, col), (endRow, endCol), self.board))
+                        elif endPiece[0] == color: # enemy piece validation
+                            moves.append(Move((row, col), (endRow, endCol), self.board))
+                            break
+                        else: #friendly piece detection, therefore move is invalid
+                            break
                 else: #outside of the board validation
                     break
                 
@@ -210,7 +215,6 @@ class GameState():
         for i in range(len(self.pins) - 1, -1, -1):
             if self.pins[i][0] == row and self.pins[i][1] == col:
                 piecePinned = True
-                pinOffset = (self.pins[i][2], self.pins[i][3])
                 self.pins.remove(self.pins[i])
                 break
 
@@ -226,6 +230,15 @@ class GameState():
                         moves.append(Move((row, col), (endRow, endCol), self.board))
 
     def getBishopMoves(self, row, col, moves):
+        piecePinned = False
+        pinOffset = ()
+        for i in range(len(self.pins) - 1, -1, -1):
+            if self.pins[i][0] == row and self.pins[i][1] == col:
+                piecePinned = True
+                pinOffset = (self.pins[i][2], self.pins[i][3])
+                self.pins.remove(self.pins[i])
+                break
+
         offsets = ((-1,-1), (-1,1), (1,-1), (1,1))
         color = "b" if self.whiteToMove else "w"
         for o in offsets:
@@ -233,15 +246,16 @@ class GameState():
                 endRow = row + o[0] * i
                 endCol = col + o[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece = self.board[endRow][endCol]
-                    if endPiece == "--":
-                        moves.append(Move((row, col), (endRow, endCol), self.board))
-                    elif endPiece[0] == color:
-                        moves.append(Move((row, col), (endRow, endCol), self.board))
-                        break
-                    else: 
-                        break
-                else:
+                    if not piecePinned or pinOffset == o or pinOffset == (-o[0], -o[1])
+                        endPiece = self.board[endRow][endCol]
+                        if endPiece == "--": #empty space validation
+                            moves.append(Move((row, col), (endRow, endCol), self.board))
+                        elif endPiece[0] == color: # enemy piece validation
+                            moves.append(Move((row, col), (endRow, endCol), self.board))
+                            break
+                        else: #friendly piece - invalid
+                            break
+                else: #off board
                     break
     def getQueenMoves(self, row, col, moves): #queen is just a rook and a bishop connected together.
         self.getBishopMoves(row, col, moves)
