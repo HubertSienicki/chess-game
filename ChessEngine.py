@@ -246,7 +246,7 @@ class GameState():
                 endRow = row + o[0] * i
                 endCol = col + o[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    if not piecePinned or pinOffset == o or pinOffset == (-o[0], -o[1])
+                    if not piecePinned or pinOffset == o or pinOffset == (-o[0], -o[1]):
                         endPiece = self.board[endRow][endCol]
                         if endPiece == "--": #empty space validation
                             moves.append(Move((row, col), (endRow, endCol), self.board))
@@ -262,15 +262,28 @@ class GameState():
         self.getRookMoves(row, col, moves)
 
     def getKingMoves(self, row, col, moves):
-        offsets = ((-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1))
+        rowMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
+        colMoves = (-1, 0, 1, -1, 1, -1, 0, 1)
         color = "w" if self.whiteToMove else "b"
         for i in range(8):
-            endRow = row + offsets[i][0]
-            endCol = col + offsets[i][1]
-            if 0 <= endRow < 8 and 0 <= endCol < 8:
+            endRow = row + rowMoves[i]
+            endCol = col + rowMoves[i]
+            if 0 <= endRow < 8 and 0 <= endCol <= 8:
                 endPiece = self.board[endRow][endCol]
-                if endPiece[0] != color:
-                    moves.append(Move((row, col), (endRow, endCol), self.board))
+                if endPiece[0] != color:#not an allied piece
+                    if color == 'w':
+                        self.whiteKingLocation = (endRow, endCol)
+                    else:
+                        self.blackKingLocation = (endRow, endCol)
+                    
+                    inCheck, pins, checks = (endRow, endCol)
+                    if not inCheck:
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                    if color == 'w':
+                        self.whiteKingLocation = (endRow, endCol)
+                    else:
+                        self.blackKingLocation = (endRow, endCol)
+
 
     def checkForPinsAndChecks(self):
         pins = [] #for allied pinned pieces
